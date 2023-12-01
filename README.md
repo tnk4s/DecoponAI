@@ -30,3 +30,5 @@ poetry run python src/main.py
 ```
 poetry run python src/train.py
 ```
+
+モデルのテストはゲームの起動と同様です．```test.py```は使用しません．
