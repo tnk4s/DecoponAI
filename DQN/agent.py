@@ -33,7 +33,7 @@ class Matcha:
 
         self.exploration_rate = 1.0#最初は1だった
         #self.exploration_rate = 1.0 * 0.99990 ** 55
-        self.exploration_rate_decay = 0.99990
+        self.exploration_rate_decay = 0.9999990
         self.exploration_rate_min = 0.1
         self.curr_step = 0
 
