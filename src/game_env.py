@@ -154,9 +154,8 @@ class DecoponGameEnv(gym.Env, Game):
         for i, poly in enumerate(self.progress):
             pygame.draw.rect(self.window, Polygons[i].color, poly)
 
-        self.space.step(1 / 60)
         pygame.display.update()
-        self.fps(60)
+        
 
 
     def close(self):
@@ -174,16 +173,6 @@ class DecoponGameEnv(gym.Env, Game):
         return reward
     
     def observe(self):
-        # pygameの画面をキャプチャする
-        # screen_surface = pygame.display.get_surface()
-        # screen_data = pygame.surfarray.array3d(screen_surface)
-
-        # image = Image.fromarray(screen_data, 'RGB')# PILライブラリを使用して画像を処理する
-        # observation = np.array(image)# NumPy配列に変換する
-        # observation = np.rot90(observation, k=-1)# 画像の向きを正しく
-
-        # #print("observation.shape:" ,observation.shape)
-
         # 今の玉と次の玉と上から10個の玉の位置を返す．
         observation = []
         poly = Polygons[self.current]#今の
