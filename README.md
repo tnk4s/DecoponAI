@@ -18,7 +18,7 @@ decoponを使えるようにするため，installします．
 poetry install
 ```
 
-installできたら，ゲームを起動しましょう．
+installできたら，ゲームを起動しましょう．デフォルトではAIモデルがゲームをプレイします．
 
 ```
 poetry run python src/main.py
