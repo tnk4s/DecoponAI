@@ -27,7 +27,7 @@ class RemotePlayer(Controller):
     def update(self, indicator_centerx) -> Tuple[bool, bool, bool]:
         if self.wait_counter == 0:
             if abs(indicator_centerx - self.destination) <=2:# 投下
-                self.wait_counter = 60
+                self.wait_counter = int(60 * 1.5)
                 return (False, False, True)
 
             if (self.destination - indicator_centerx) < 0:#左
@@ -36,10 +36,13 @@ class RemotePlayer(Controller):
             return (False, True, False)# 右
 
         else:# 停止
-            self.wait_counter -= 1
+            self.wait_counter = self.wait_counter - 1
             return (False, False, False)
         
 
     def set_destination(self, destination):
         #print("set_destination", destination)
         self.destination = destination + 65 + 7
+    
+    def get_wait_counter(self):
+        return self.wait_counter

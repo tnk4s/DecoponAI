@@ -62,9 +62,8 @@ class DecoponGameEnv(gym.Env, Game):
 
     def update_game_status(self):# 描画関係を取り除き，ゲーム状態の更新
         act_not_flag = True
-        drop_wait_max = 60 * 1 # 適当
 
-        while act_not_flag:
+        while act_not_flag or self.controller.get_wait_counter() > 0:
             seconds = (pygame.time.get_ticks() - self.start_time) // 1000
             #seconds = (self.accel_time - self.start_time) // 1000
             #print(pygame.time.get_ticks(), self.start_time)
@@ -110,30 +109,6 @@ class DecoponGameEnv(gym.Env, Game):
             self.space.step(1 / 60)
             #self.accel_time += 1000/60.0
             self.fps(60)
-        
-        if not self.exit_flag:
-            for _ in range(drop_wait_max):# 落ちるまで待つ?
-                seconds = (pygame.time.get_ticks() - self.start_time) // 1000
-                if self.isGameOver or seconds > TIMELIMIT:
-                    print("==GAME OVER==")
-                    print("self.isGameOver:", self.isGameOver)
-                    print("seconds > TIMELIMIT:", seconds > TIMELIMIT)
-                    print("score:", self.score)
-                    self.exit_flag = True#exit(0)
-                    break
-
-                if self.check_event(pygame.QUIT):
-                    return
-                if self.check_overflow():
-                    self.countOverflow += 1
-                
-                if self.countOverflow > 200:
-                    self.isGameOver = True
-                
-                self.render()
-                self.space.step(1 / 60)
-                #self.accel_time += 1000/60.0
-                self.fps(60)
 
 
 

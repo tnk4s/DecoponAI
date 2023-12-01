@@ -32,7 +32,7 @@ log_dir = Path("log")
 # save_dir.mkdir(parents=True)
 
 #matcha = Matcha(state_dim=(4, 84, 84), action_dim=env.action_space.n, save_dir=save_dir)#ORG
-matcha = Matcha(state_dim=62, action_dim=350-14, save_dir=save_dir)
+matcha = Matcha(state_dim=62, action_dim=350, save_dir=save_dir)
 
 logger = MetricLogger(log_dir)
 
@@ -64,7 +64,7 @@ for e in tqdm(range(episodes)):
         state = next_state
 
         # ゲーム画面の描画
-        env.render()
+        #env.render()
 
         # ゲームが終了したかどうかを確認
         # if done or info["flag_get"]:  # ゲームの終了条件によってはこれ
