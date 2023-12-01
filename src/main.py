@@ -80,6 +80,7 @@ class Game:
             self.poly.remove(p0)
             self.poly.remove(p1)
             space.remove(p0, p0.body, p1, p1.body)
+            return False
 
         return True
 

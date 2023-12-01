@@ -28,7 +28,7 @@ class RemotePlayer(Controller):
     def update(self, indicator_centerx) -> Tuple[bool, bool, bool]:
         if self.wait_counter == 0:
             if abs(indicator_centerx - self.destination) <=2:# 投下
-                self.wait_counter = int(60 * 1.5)
+                self.wait_counter = int(60 * 2.0)
                 return (False, False, True)
 
             if (self.destination - indicator_centerx) < 0:#左
@@ -83,7 +83,7 @@ class AiDrive(Controller):
         if self.wait_counter == 0:
             
             if abs(indicator_centerx - self.destination) <=2:# 投下
-                self.wait_counter = int(60 * 1.5)
+                self.wait_counter = int(60 * 2.0)
                 self.setted_flag = False
                 return (False, False, True)
 
