@@ -5,7 +5,7 @@ from typing import Tuple
 import pygame
 import pymunk
 
-from decopon.controller import Controller, Human
+from decopon.controller import Controller, Human, AiDrive
 
 Polygon = namedtuple("Polygon", ["mass", "radius", "color", "score", "index"])
 Polygons = [
@@ -155,7 +155,8 @@ class Game:
             if self.check_overflow():
                 self.countOverflow += 1
 
-            isLeft, isRight, isDrop = self.controller.update()
+            #isLeft, isRight, isDrop = self.controller.update()
+            isLeft, isRight, isDrop = self.controller.update(self.indicator.centerx, Polygons, self.current, self.next, self.poly)
 
             if isLeft:
                 self.indicator.centerx -= 3
@@ -222,6 +223,6 @@ class RandomPlayer(Controller):
 
 if __name__ == "__main__":
     # 人間でプレイしたいとき
-    Game(Human()).run()
+    #Game(Human()).run()
     # AIでやる場合
-    #Game(RandomPlayer()).run()
+    Game(AiDrive()).run()
