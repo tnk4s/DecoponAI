@@ -6,7 +6,7 @@
 Getting Started
 ===============
 
-poetryをインストールします。
+poetryをインストールします．
 [poetry](https://python-poetry.org/docs/)のページを参考に，自分の環境に合った方法でインストールしてください．
 
 ```
