@@ -31,13 +31,14 @@ class DecoponGameEnv(gym.Env, Game):
         
         
         self.observation_data = None # 画像になるか，ただの数列
-        self.reward_range = [-1., 500.]
+        self.reward_range = [-50., 500.]
 
         self.exit_flag = False
         self.last_score = 0
         self.episode_start_time = 0  # 残り時間
 
-        self.accel_time = 0#ゲーム環境での経過時間
+        self.max_y = 0#一番高い球 200が一番高い
+        self.last_max_y = HEIGHT
 
 
     def reset(self):
@@ -65,8 +66,6 @@ class DecoponGameEnv(gym.Env, Game):
 
         while act_not_flag or self.controller.get_wait_counter() > 0:
             seconds = (pygame.time.get_ticks() - self.start_time) // 1000
-            #seconds = (self.accel_time - self.start_time) // 1000
-            #print(pygame.time.get_ticks(), self.start_time)
 
             if self.isGameOver or seconds > TIMELIMIT:
                 print("==GAME OVER==")
@@ -107,11 +106,7 @@ class DecoponGameEnv(gym.Env, Game):
             
             self.render()
             self.space.step(1 / 60)
-            #self.accel_time += 1000/60.0
             self.fps(60)
-
-
-
     
     def render(self, mode='human'): # run()のうち，描画関係のみこちらに移植
         self.window.fill((89, 178, 36))
@@ -167,7 +162,8 @@ class DecoponGameEnv(gym.Env, Game):
         if diff_score > 0:
             reward = diff_score
         else:
-            reward = -0.0001
+            reward = -(10.0 + (self.last_max_y - self.max_y))
+            self.last_max_y = self.max_y
         self.last_score = self.score
 
         return reward
@@ -200,6 +196,9 @@ class DecoponGameEnv(gym.Env, Game):
                 observation.append(int(-1))#x
                 observation.append(int(-1))#y
 
+        self.max_y = observation[4]
+        #print("max_y:", self.max_y)
+        #print(observation)
         observation = np.array(observation, dtype = np.float32)
         #print("observation:", observation)
         #print("observation.shape:" ,observation.shape)# 2 + 3*10 = 32?
