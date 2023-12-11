@@ -109,8 +109,8 @@ class DecoponGameEnv(gym.Env, Game):
                 self.isGameOver = True
             
             self.render()
-            for _ in range(60):#120倍速？
-                self.space.step(1/30)
+            for _ in range(120):#120倍速？
+                self.space.step(1/60)
             self.fps(600)
 
 
