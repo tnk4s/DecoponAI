@@ -157,7 +157,8 @@ class Game:
                 self.countOverflow += 1
 
             #isLeft, isRight, isDrop = self.controller.update()
-            isLeft, isRight, isDrop = self.controller.update(self.indicator.centerx, Polygons, self.current, self.next, self.poly)
+            data_pack = (self.indicator.centerx, Polygons, self.current, self.next, self.poly)
+            isLeft, isRight, isDrop = self.controller.update(data_pack)
 
             if isLeft:
                 self.indicator.centerx -= 3

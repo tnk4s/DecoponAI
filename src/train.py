@@ -36,7 +36,7 @@ matcha = Matcha(state_dim=62, action_dim=350, save_dir=save_dir)
 
 logger = MetricLogger(log_dir)
 
-episodes = 55
+episodes = 10000#55
 
 for e in tqdm(range(episodes)):
 

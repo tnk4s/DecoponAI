@@ -29,16 +29,16 @@ class DecoponGameEnv(gym.Env, Game):
         #self.observation_space = spaces.Box(low=0, high=255, shape=(84, 84, 3), dtype=np.uint8)# 観測空間を定義 84×84の画像
         self.observation_space = spaces.Box(low=-1, high=HEIGHT)# 観測空間を定義 仮
         
-        
+        self.limit_y = 200#ゲームオーバーの高さ
         self.observation_data = None # 画像になるか，ただの数列
-        self.reward_range = [-1., 500.]
+        #self.reward_range = [- pow((HEIGHT - self.limit_y), 2), 500.]
+        self.reward_range = [-1. , 500.]
 
         self.exit_flag = False
         self.last_score = 0
         self.episode_start_time = 0  # 残り時間
 
-        self.accel_time = 0#ゲーム環境での経過時間
-
+        self.max_y = HEIGHT#球の最も高い座標
 
     def reset(self):
         self.__init__()
@@ -65,7 +65,6 @@ class DecoponGameEnv(gym.Env, Game):
 
         while act_not_flag or self.controller.get_wait_counter() > 0:
             seconds = (pygame.time.get_ticks() - self.start_time) // 1000
-            #seconds = (self.accel_time - self.start_time) // 1000
             #print(pygame.time.get_ticks(), self.start_time)
 
             if self.isGameOver or seconds > TIMELIMIT:
@@ -85,9 +84,13 @@ class DecoponGameEnv(gym.Env, Game):
             #print("now_act:", isLeft, isRight, isDrop)
 
             if isLeft:
-                self.indicator.centerx -= 3
+                for _ in range(self.controller.get_move_step(self.indicator.centerx)):
+                    self.indicator.centerx -= 3
+                #self.indicator.centerx -= int(self.controller.get_move_step(self.indicator.centerx) * 3)
             elif isRight:
-                self.indicator.centerx += 3
+                for _ in range(self.controller.get_move_step(self.indicator.centerx)):
+                    self.indicator.centerx += 3
+                #self.indicator.centerx += int(self.controller.get_move_step(self.indicator.centerx) * 3)
             elif isDrop and pygame.time.get_ticks() - self.drop_ticks > 500 and not self.check_overflow():
                 self.create_poly(self.indicator.centerx, self.indicator.topleft[1], self.current)
                 self.drop_ticks = pygame.time.get_ticks()
@@ -106,9 +109,9 @@ class DecoponGameEnv(gym.Env, Game):
                 self.isGameOver = True
             
             self.render()
-            self.space.step(1 / 60)
-            #self.accel_time += 1000/60.0
-            self.fps(60)
+            for _ in range(60):#120倍速？
+                self.space.step(1/30)
+            self.fps(600)
 
 
 
@@ -166,8 +169,13 @@ class DecoponGameEnv(gym.Env, Game):
         diff_score = self.score - self.last_score
         if diff_score > 0:
             reward = diff_score
+            #reward = reward * ((self.max_y - self.limit_y) / (HEIGHT - self.limit_y))
         else:
-            reward = -0.0001
+            reward = -0.1
+            # if (self.max_y - self.limit_y) != 0:
+            #     reward = - pow((HEIGHT - self.limit_y) / (self.max_y - self.limit_y), 2)
+            # else:
+            #     reward = - pow((HEIGHT - self.limit_y), 2)
         self.last_score = self.score
 
         return reward
@@ -200,6 +208,7 @@ class DecoponGameEnv(gym.Env, Game):
                 observation.append(int(-1))#x
                 observation.append(int(-1))#y
 
+        self.max_y = observation[4]
         observation = np.array(observation, dtype = np.float32)
         #print("observation:", observation)
         #print("observation.shape:" ,observation.shape)# 2 + 3*10 = 32?

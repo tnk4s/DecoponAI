@@ -28,7 +28,7 @@ class RemotePlayer(Controller):
     def update(self, indicator_centerx) -> Tuple[bool, bool, bool]:
         if self.wait_counter == 0:
             if abs(indicator_centerx - self.destination) <=2:# 投下
-                self.wait_counter = int(60 * 2.0)
+                self.wait_counter = int((60/120) * 2.0)
                 return (False, False, True)
 
             if (self.destination - indicator_centerx) < 0:#左
@@ -47,6 +47,9 @@ class RemotePlayer(Controller):
     
     def get_wait_counter(self):
         return self.wait_counter
+    
+    def get_move_step(self, indicator_centerx):
+        return int(abs(indicator_centerx - self.destination) / 3)
 
 import torch
 from DQN.model import MatchaNet
@@ -66,7 +69,8 @@ class AiDrive(Controller):
         self.setted_flag = False
         self.wait_counter = 0
 
-    def update(self, indicator_centerx, Polygons, current_id, next_id, poly) -> Tuple[bool, bool, bool]:
+    def update(self, data_pack) -> Tuple[bool, bool, bool]:
+        indicator_centerx, Polygons, current_id, next_id, poly = data_pack
         observation = self.make_observation(Polygons, current_id, next_id, poly)
         self.net.eval()  # ネットワークを推論モードに切り替える
         with torch.no_grad():
