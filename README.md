@@ -21,6 +21,8 @@ poetry install
 
 installできたら，ゲームを起動しましょう．デフォルトではAIモデルがゲームをプレイします．
 
+なお，GitにアップロードしているAIモデルは全く訓練されていません．
+
 ```
 poetry run python src/main.py
 ```
