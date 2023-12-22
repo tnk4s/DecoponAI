@@ -28,7 +28,7 @@ class RemotePlayer(Controller):
     def update(self, indicator_centerx) -> Tuple[bool, bool, bool]:
         if self.wait_counter == 0:
             if abs(indicator_centerx - self.destination) <=2:# 投下
-                self.wait_counter = int(60 * 2.0)
+                self.wait_counter = int((60/120) * 2.0)
                 return (False, False, True)
 
             if (self.destination - indicator_centerx) < 0:#左
@@ -43,10 +43,15 @@ class RemotePlayer(Controller):
 
     def set_destination(self, destination):
         #print("set_destination", destination)
-        self.destination = destination + 65
+        self.destination = (destination * 25 + 13) + 65
     
     def get_wait_counter(self):
         return self.wait_counter
+
+    def get_move_step(self, indicator_centerx):
+        return int(abs(indicator_centerx - self.destination) / 3)
+
+
 
 import torch
 from DQN.model import MatchaNet
@@ -56,7 +61,7 @@ class AiDrive(Controller):
         super().__init__()
 
         self.state_dim = 62
-        self.action_dim = 350
+        self.action_dim = 14
         self.net = MatchaNet(self.state_dim, self.action_dim).float()
         cpt = torch.load("./trained_models/matcha_net_0.chkpt")
         stdict_m = cpt["model"]
@@ -100,7 +105,7 @@ class AiDrive(Controller):
     def set_destination(self, destination):
         #print("set_destination", destination)
         self.setted_flag = True
-        self.destination = destination + 65
+        self.destination = (destination * 25  + 13 ) + 65
     
     def make_observation(self, Polygons, current_id, next_id, poly):
         # 今の玉と次の玉と上から10個の玉の位置を返す．

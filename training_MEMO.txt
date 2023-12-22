@@ -1,0 +1,5 @@
+(forSOUZO_docker) root@74cf1190da89:/workspace/DecoponAI# nohup poetry run python src/train.py > train_log_20231217_0_ep1M.txt &
+[1] 904593
+
+(forSOUZO_docker) root@74cf1190da89:/workspace/DecoponAI# nohup poetry run python src/train.py > train_log_20231217_1.txt &
+[2] 904632

@@ -10,11 +10,13 @@ class MatchaNet(nn.Module):
         super().__init__()
 
         self.online = nn.Sequential(
-            nn.Linear(input_dim, 32),
+            nn.Linear(input_dim, 128),
             nn.ReLU(),
-            nn.Linear(32, 160),
+            nn.Linear(128, 128),
             nn.ReLU(),
-            nn.Linear(160, output_dim)
+            nn.Linear(128, 64),
+            nn.ReLU(),
+            nn.Linear(64, output_dim)
         )
         #=============
         # cpt = torch.load("./trained_models/online_matcha_net_0_20231130_0.chkpt")
