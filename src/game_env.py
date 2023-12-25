@@ -25,20 +25,28 @@ class DecoponGameEnv(gym.Env, Game):
 
         # アクション空間を定義
         #self.action_space = spaces.Discrete(3)  # 左，右，投下
-        self.action_space = spaces.Discrete(1)   #投下座標のみ
+        self.action_space = spaces.Discrete(14)   #投下座標のみ
         #self.observation_space = spaces.Box(low=0, high=255, shape=(84, 84, 3), dtype=np.uint8)# 観測空間を定義 84×84の画像
         self.observation_space = spaces.Box(low=-1, high=HEIGHT)# 観測空間を定義 仮
         
         self.limit_y = 200#ゲームオーバーの高さ
         self.observation_data = None # 画像になるか，ただの数列
         #self.reward_range = [- pow((HEIGHT - self.limit_y), 2), 500.]
-        self.reward_range = [-1. , 500.]
+        self.reward_range = [-5. , 1.]
 
         self.exit_flag = False
         self.last_score = 0
         self.episode_start_time = 0  # 残り時間
 
         self.max_y = HEIGHT#球の最も高い座標
+        self.drop_count = 0 #何回落とせたか
+        self.dropping_id = -1
+        self.dropping_same_count = 0
+        self.dropped_same_count = 0
+        self.good_drop_pos = []
+        self.dropped_pos = -1
+        self.must_flag = False
+
 
     def reset(self):
         self.__init__()
@@ -50,6 +58,7 @@ class DecoponGameEnv(gym.Env, Game):
         self.step()
 
     def step(self, destination):
+        self.pre_observe()
         self.controller.set_destination(destination)
         self.update_game_status()
 
@@ -57,6 +66,10 @@ class DecoponGameEnv(gym.Env, Game):
         reward = self.get_reward()
         done = self.is_done()
         info = {}
+
+        #if done == True and self.drop_count < 120:
+        #    reward = -120 # 罰則
+            
 
         return observation, reward, done, {}, info
 
@@ -86,17 +99,17 @@ class DecoponGameEnv(gym.Env, Game):
             if isLeft:
                 for _ in range(self.controller.get_move_step(self.indicator.centerx)):
                     self.indicator.centerx -= 3
-                #self.indicator.centerx -= int(self.controller.get_move_step(self.indicator.centerx) * 3)
             elif isRight:
                 for _ in range(self.controller.get_move_step(self.indicator.centerx)):
                     self.indicator.centerx += 3
-                #self.indicator.centerx += int(self.controller.get_move_step(self.indicator.centerx) * 3)
             elif isDrop and pygame.time.get_ticks() - self.drop_ticks > 500 and not self.check_overflow():
                 self.create_poly(self.indicator.centerx, self.indicator.topleft[1], self.current)
                 self.drop_ticks = pygame.time.get_ticks()
                 self.current = self.next
                 self.next = random.randint(0, 4)
                 self.countOverflow = 0
+                self.drop_count += 1
+                self.dropped_pos = self.indicator.centerx# 落とした座標を記録
                 act_not_flag = False
             
             if self.indicator.centerx < 65:
@@ -109,13 +122,11 @@ class DecoponGameEnv(gym.Env, Game):
                 self.isGameOver = True
             
             self.render()
-            for _ in range(120):#120倍速？
-                self.space.step(1/60)
+            #for _ in range(120):#120倍速
+            self.space.step(1 / 60)
             self.fps(600)
 
 
-
-    
     def render(self, mode='human'): # run()のうち，描画関係のみこちらに移植
         self.window.fill((89, 178, 36))
         pygame.draw.rect(self.window, (255, 255, 255), self.indicator)
@@ -159,8 +170,6 @@ class DecoponGameEnv(gym.Env, Game):
 
         pygame.display.update()
         
-
-
     def close(self):
         pygame.quit()
     
@@ -168,23 +177,68 @@ class DecoponGameEnv(gym.Env, Game):
         reward = 0
         diff_score = self.score - self.last_score
         if diff_score > 0:
-            reward = diff_score
+            #reward = diff_score // def and type1
             #reward = reward * ((self.max_y - self.limit_y) / (HEIGHT - self.limit_y))
+            if len(self.good_drop_pos) > 0:# type2
+                for pos in self.good_drop_pos:
+                    if abs(pos - self.dropped_pos) <= 13:
+                        reward = 1.0
+                if reward == 0:
+                    reward = 0.1
+        elif (self.dropped_same_count - self.dropping_same_count) > 0 and self.must_flag:
+            reward = -5.0
         else:
-            reward = -0.1
-            # if (self.max_y - self.limit_y) != 0:
-            #     reward = - pow((HEIGHT - self.limit_y) / (self.max_y - self.limit_y), 2)
-            # else:
-            #     reward = - pow((HEIGHT - self.limit_y), 2)
+            reward = - 1.0
+            #if (self.max_y - self.limit_y) != 0:
+            #    reward = - pow((HEIGHT - self.limit_y) / (self.max_y - self.limit_y), 2)
+            #else:
+            #    reward = - pow((HEIGHT - self.limit_y), 2)
         self.last_score = self.score
-
+        print(reward)
         return reward
+        #return 1.0 # type1 いかに長くゲームをプレイできるかを評価したい
     
-    def observe(self):
+    def pre_observe(self):
+        self.must_flag = False
+        self.good_drop_pos = []
         # 今の玉と次の玉と上から10個の玉の位置を返す．
         observation = []
         poly = Polygons[self.current]#今の
         observation.append(poly.index)
+        self.dropping_id = poly.index
+        self.dropping_same_count = 0
+
+        all_poly_data = []
+        for poly in self.poly:
+            tmp = [int(poly.index), int(poly.body.position.x), int(poly.body.position.y)]
+            all_poly_data.append(tmp)
+        
+        all_poly_sorted = sorted(all_poly_data, reverse=False, key=lambda x: x[2])#2番目の要素=y座標でソート
+        counter = 0
+        for s_poly in all_poly_sorted:
+            observation.append(s_poly[0])#index
+            observation.append(s_poly[1])#x
+            observation.append(s_poly[2])#y
+            counter += 1
+            if s_poly[0] == self.dropping_id:
+                if counter < 5:
+                    self.must_flag = True
+                if counter < 10:
+                    self.good_drop_pos.append(s_poly[1])#落とすべき座標を記録
+                self.dropping_same_count += 1
+
+            if counter == 20:
+                break
+
+    def observe(self):
+        self.dropped_same_count = 0
+        # 今の玉と次の玉と上から10個の玉の位置を返す．
+        observation = []
+        poly = Polygons[self.current]#今の
+        observation.append(poly.index)
+        self.dropping_id = poly.index
+        self.dropping_same_count = 0
+
         poly = Polygons[self.next]#次の
         observation.append(poly.index)
 
@@ -200,6 +254,8 @@ class DecoponGameEnv(gym.Env, Game):
             observation.append(s_poly[1])#x
             observation.append(s_poly[2])#y
             counter += 1
+            if s_poly[0] == self.dropping_id:
+                self.dropped_same_count += 1
             if counter == 20:
                 break
         if counter < 20:
