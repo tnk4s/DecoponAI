@@ -32,7 +32,8 @@ class Matcha:
             self.net = self.net.to(device="cuda")
 
         self.exploration_rate = 1.0#最初は1だった
-        self.exploration_rate_decay = 0.999996
+        #self.exploration_rate_decay = 0.999999934 #ep1M
+        self.exploration_rate_decay = 0.999998 # ep10k
         self.exploration_rate_min = 0.01
         self.curr_step = 0
 

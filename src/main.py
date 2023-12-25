@@ -5,7 +5,7 @@ from typing import Tuple
 import pygame
 import pymunk
 
-from decopon.controller import Controller, Human, AiDrive
+from decopon.controller import Controller, Human, AiDrive, HybridDrive
 
 Polygon = namedtuple("Polygon", ["mass", "radius", "color", "score", "index"])
 Polygons = [
@@ -227,4 +227,5 @@ if __name__ == "__main__":
     # 人間でプレイしたいとき
     #Game(Human()).run()
     # AIでやる場合
-    Game(AiDrive()).run()
+    #Game(AiDrive()).run()
+    Game(HybridDrive()).run()
