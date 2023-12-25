@@ -6,8 +6,8 @@ import numpy as np
 
 from DQN.model import MatchaNet
 
-CAPACITY = 100000
-BATCH_SIZE = 32
+CAPACITY = 300000
+BATCH_SIZE = 512
 GAMMA = 0.9
 SAVE_FREQUENCY = 5e5
 
@@ -32,9 +32,8 @@ class Matcha:
             self.net = self.net.to(device="cuda")
 
         self.exploration_rate = 1.0#最初は1だった
-        #self.exploration_rate = 1.0 * 0.99990 ** 55
         self.exploration_rate_decay = 0.999996
-        self.exploration_rate_min = 0.1
+        self.exploration_rate_min = 0.01
         self.curr_step = 0
 
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr=0.00025)
