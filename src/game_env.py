@@ -121,9 +121,9 @@ class DecoponGameEnv(gym.Env, Game):
             if self.countOverflow > 200:
                 self.isGameOver = True
             
-            self.render()
-            #for _ in range(120):#120倍速
-            self.space.step(1 / 60)
+            #self.render()
+            for _ in range(120):#120倍速
+                self.space.step(1 / 60)
             self.fps(600)
 
 
@@ -181,10 +181,10 @@ class DecoponGameEnv(gym.Env, Game):
             #reward = reward * ((self.max_y - self.limit_y) / (HEIGHT - self.limit_y))
             if len(self.good_drop_pos) > 0:# type2
                 for pos in self.good_drop_pos:
-                    if abs(pos - self.dropped_pos) <= 13:
-                        reward = 1.0
-                if reward == 0:
-                    reward = 0.1
+                    if abs(pos - self.dropped_pos) <= 14:
+                        reward = 5.0
+            if reward == 0:
+                reward = 1.0
         elif (self.dropped_same_count - self.dropping_same_count) > 0 and self.must_flag:
             reward = -5.0
         else:
@@ -194,7 +194,7 @@ class DecoponGameEnv(gym.Env, Game):
             #else:
             #    reward = - pow((HEIGHT - self.limit_y), 2)
         self.last_score = self.score
-        print(reward)
+        
         return reward
         #return 1.0 # type1 いかに長くゲームをプレイできるかを評価したい
     
